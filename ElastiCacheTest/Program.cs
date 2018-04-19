@@ -27,7 +27,15 @@ namespace ElastiCacheTest
             var requestSimulator = new RequestSimulator();
             var requestSimulatorTask = requestSimulator.Run();
 
-            await requestSimulatorTask;
+            //var awsOptions = _Configuration.GetAWSOptions();
+            //var amazonElastiCache = awsOptions.CreateServiceClient<IAmazonElastiCache>();
+
+            //var elastiCacheFailoverSimulator = new ElastiCacheFailoverSimulator(amazonElastiCache);
+            //var elastiCacheFailoverSimulatorTask = elastiCacheFailoverSimulator.Run();
+
+            await Task.WhenAll(
+                //elastiCacheFailoverSimulatorTask,
+                requestSimulatorTask);
         }
     }
 }
