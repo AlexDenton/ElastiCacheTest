@@ -23,6 +23,7 @@ namespace ElastiCacheTest
 
             var configurationOptions = new ConfigurationOptions();
             redisEndpoints.ForEach(configurationOptions.EndPoints.Add);
+            configurationOptions.ConnectTimeout = 60;
             configurationOptions.KeepAlive = 180;
             configurationOptions.ConfigCheckSeconds = 30;
             configurationOptions.AbortOnConnectFail = false;
