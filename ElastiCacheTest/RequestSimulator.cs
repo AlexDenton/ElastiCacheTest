@@ -27,6 +27,9 @@ namespace ElastiCacheTest
             configurationOptions.KeepAlive = 180;
             configurationOptions.ConfigCheckSeconds = 30;
             configurationOptions.AbortOnConnectFail = false;
+            configurationOptions.ConnectRetry = 10;
+            configurationOptions.ReconnectRetryPolicy = new ExponentialRetry(5000);
+            configurationOptions.SyncTimeout = 60;
 
             var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configurationOptions);
             return connectionMultiplexer.GetDatabase(0);
