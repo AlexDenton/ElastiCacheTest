@@ -18,9 +18,7 @@ namespace ElastiCacheTest
         {
             var redisEndpoints = new List<string>
             {
-                "dentoncache-001.zbumom.0001.use2.cache.amazonaws.com:6379",
-                "dentoncache-002.zbumom.0001.use2.cache.amazonaws.com:6379",
-                "dentoncache-003.zbumom.0001.use2.cache.amazonaws.com:6379"
+                "dentoncache1.zbumom.clustercfg.use2.cache.amazonaws.com:6379"
             };
 
             var configurationOptions = new ConfigurationOptions();

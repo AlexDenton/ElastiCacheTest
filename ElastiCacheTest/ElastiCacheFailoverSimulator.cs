@@ -21,8 +21,8 @@ namespace ElastiCacheTest
 
             var testFailoverRequest = new TestFailoverRequest
             {
-                ReplicationGroupId = "dentoncache",
-                NodeGroupId = "dentoncache-001"
+                ReplicationGroupId = "dentoncache1",
+                NodeGroupId = "dentoncache1-0001"
             };
 
             Console.WriteLine("Failing over...");
