@@ -39,7 +39,7 @@ namespace ElastiCacheTest
 
             while (true)
             {
-                var redisKey = new Guid().ToString();
+                var redisKey = Guid.NewGuid().ToString();
                 var setResult = _RedisDatabase.StringSet(redisKey, "test-value");
                 Console.WriteLine($"Result for setting {redisKey}: {setResult}");
                 var getResult = _RedisDatabase.StringGet(redisKey);
