@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Polly;
 using StackExchange.Redis;
 
 namespace ElastiCacheTest
@@ -42,9 +43,24 @@ namespace ElastiCacheTest
             while (true)
             {
                 var redisKey = Guid.NewGuid().ToString();
-                var setResult = _RedisDatabase.StringSet(redisKey, "test-value");
+                var backoffPolicy = Policy
+                    .Handle<RedisServerException>()
+                    .WaitAndRetry(
+                        5,
+                        (attemptCount, context) =>
+                        {
+                            return TimeSpan.FromSeconds(Math.Pow(2, attemptCount));
+                        },
+                        (exception, timeSpan, retryCount, context) =>
+                        {
+                            Console.WriteLine($"Exception occured {nameof(exception)}, retry count {retryCount}, timespan {timeSpan}");
+                        });
+
+                var setResult = await backoffPolicy 
+                    .ExecuteAsync(() => _RedisDatabase.StringSetAsync(redisKey, "test-value"));
                 Console.WriteLine($"Result for setting {redisKey}: {setResult}");
-                var getResult = _RedisDatabase.StringGet(redisKey);
+                var getResult = await backoffPolicy
+                    .ExecuteAsync(() => _RedisDatabase.StringGetAsync(redisKey));
                 Console.WriteLine($"Result for getting {redisKey}: {getResult}");
 
                 await Task.Delay(requestInterval);
