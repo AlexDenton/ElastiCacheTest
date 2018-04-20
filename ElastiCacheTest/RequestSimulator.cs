@@ -46,6 +46,9 @@ namespace ElastiCacheTest
 
                 var backoffPolicy = Policy
                     .Handle<RedisServerException>()
+                    .Or<RedisCommandException>()
+                    .Or<RedisException>()
+                    .Or<RedisTimeoutException>()
                     .WaitAndRetryAsync(
                         5,
                         (attemptCount, context) =>
@@ -54,7 +57,7 @@ namespace ElastiCacheTest
                         },
                         (exception, timeSpan, retryCount, context) =>
                         {
-                            Console.WriteLine($"Exception occured {nameof(exception)}, retry count {retryCount}, timespan {timeSpan}");
+                            Console.WriteLine($"Exception occured {exception.GetType()}, retry count {retryCount}, timespan {timeSpan}");
                         });
 
                 var setResult = await backoffPolicy 
