@@ -10,9 +10,31 @@ namespace ElastiCacheTest
     {
         private readonly IDatabase _RedisDatabase;
 
+        private readonly IAsyncPolicy _RedisBackoffPolicy;
+
         public RequestSimulator()
         {
             _RedisDatabase = GetRedisDatabaseConnection().Result;
+            _RedisBackoffPolicy = InitializeRedisBackoffPolicy();
+        }
+
+        private IAsyncPolicy InitializeRedisBackoffPolicy()
+        {
+            return Policy
+                .Handle<RedisServerException>()
+                .Or<RedisCommandException>()
+                .Or<RedisException>()
+                .Or<RedisTimeoutException>()
+                .WaitAndRetryAsync(
+                    5,
+                    (attemptCount, context) =>
+                    {
+                        return TimeSpan.FromSeconds(Math.Pow(2, attemptCount));
+                    },
+                    (exception, timeSpan, retryCount, context) =>
+                    {
+                        Console.WriteLine($"Exception occured {exception.GetType()}, retry count {retryCount}, wait time {timeSpan}");
+                    });
         }
 
         private async Task<IDatabase> GetRedisDatabaseConnection()
@@ -44,26 +66,10 @@ namespace ElastiCacheTest
             {
                 var redisKey = Guid.NewGuid().ToString();
 
-                var backoffPolicy = Policy
-                    .Handle<RedisServerException>()
-                    .Or<RedisCommandException>()
-                    .Or<RedisException>()
-                    .Or<RedisTimeoutException>()
-                    .WaitAndRetryAsync(
-                        5,
-                        (attemptCount, context) =>
-                        {
-                            return TimeSpan.FromSeconds(Math.Pow(2, attemptCount));
-                        },
-                        (exception, timeSpan, retryCount, context) =>
-                        {
-                            Console.WriteLine($"Exception occured {exception.GetType()}, retry count {retryCount}, timespan {timeSpan}");
-                        });
-
-                var setResult = await backoffPolicy 
+                var setResult = await _RedisBackoffPolicy
                     .ExecuteAsync(() => _RedisDatabase.StringSetAsync(redisKey, "test-value"));
                 Console.WriteLine($"Result for setting {redisKey}: {setResult}");
-                var getResult = await backoffPolicy
+                var getResult = await _RedisBackoffPolicy
                     .ExecuteAsync(() => _RedisDatabase.StringGetAsync(redisKey));
                 Console.WriteLine($"Result for getting {redisKey}: {getResult}");
 
