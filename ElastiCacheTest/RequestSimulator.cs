@@ -43,9 +43,10 @@ namespace ElastiCacheTest
             while (true)
             {
                 var redisKey = Guid.NewGuid().ToString();
+
                 var backoffPolicy = Policy
                     .Handle<RedisServerException>()
-                    .WaitAndRetry(
+                    .WaitAndRetryAsync(
                         5,
                         (attemptCount, context) =>
                         {
